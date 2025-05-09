@@ -72,3 +72,13 @@ The examples directory contains various demonstrations of the Azure AI Agent Ser
 ### `7-callExisting.ts`
 *Uses an existing agent instead of creating a new one. The ultimate lazy script that makes others do all the hard work while it takes all the credit.*
 
+### `8-codeInterpreter.ts`
+*Uploads data and unleashes an agent with code interpreter powers that's part data scientist, part comedian. It's like giving a calculator to a stand-up comedian who insists on turning your serious financial data into bar charts with punchlines.*
+
+
+
+## Dataset
+
+https://catalog.data.gov/dataset/texas-state-expenditures-by-county-2023/resource/ca2c36f3-107f-4f28-af82-974de9193b36
+
+https://learn.microsoft.com/en-us/azure/ai-services/openai/overview
