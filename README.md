@@ -9,6 +9,7 @@ This repo started as a humble [Azure AI Agent QuickStart](https://learn.microsof
 Before you can unleash these digital minions upon the world, you'll need:
 
 - **An Azure account**: If you don't have one, Microsoft would be very disappointed (and you can [sign up here](https://azure.microsoft.com/free/))
+- **Azure CLI login**: Make sure you're authenticated with `az login` or the Azure gods will deny your requests faster than a bouncer at an exclusive club.
 - **AI Foundry project**: Set it up by following the [QuickStart](https://learn.microsoft.com/azure/ai-services/agents/quickstart?pivots=programming-language-javascript). It's like building a playpen for your AI babies.
 - **AI Search knowledge**: For those who want their agents to actually know things, check the [AI Search tooling](https://learn.microsoft.com/azure/ai-services/agents/how-to/tools/azure-ai-search?tabs=azurecli%2Cjavascript&pivots=code-examples) docs. Warning: side effects may include agents that are too smart for their own good.
 - **Patience**: Results may vary, and sometimes your AI agent will say things that make you question its intelligence (much like having teenagers).
@@ -16,6 +17,11 @@ Before you can unleash these digital minions upon the world, you'll need:
 ## 🚀 Running the Demo (Without Running for the Hills)
 
 After completing the prerequisite steps (or pretending you did and hoping for the best), follow these instructions:
+
+0. **Log in to Azure** - Make sure you're authenticated (this is non-negotiable):
+   ```bash
+   az login   # No login, no fun
+   ```
 
 1. **Clone the repo environment** - Copy `.env.template` to `.env` (the digital equivalent of photocopying someone else's homework):
 
