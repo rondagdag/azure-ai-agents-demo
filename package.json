@@ -13,8 +13,9 @@
     "messages": "tsx ./examples/3-messages.ts",
     "streaming": "tsx ./examples/4-streaming.ts",
     "run": "tsx ./examples/5-run.ts",
-    "call-existing": "tsx ./examples/6-callExisting.ts",
-    "agent-attachment": "tsx ./examples/7-agentattachment.ts"
+    "agent-attachment": "tsx ./examples/6-agentAttachment.ts",
+    "call-existing": "tsx ./examples/7-callExisting.ts",
+    "code-interpreter": "tsx ./examples/8-codeInterpreter.ts"
   },
   "dependencies": {
     "@azure/ai-projects": "^1.0.0-beta.4",
