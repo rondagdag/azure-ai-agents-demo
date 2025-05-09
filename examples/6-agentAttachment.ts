@@ -15,7 +15,7 @@ import fs from "fs";
 import "dotenv/config";
 //#endregion
 
-//#region Configuration
+//#region Configurationm
 // Define the PDF file to use and its path
 const fileName = "azure-ai-services-agents.pdf";
 const filePath = "files/" + fileName;

@@ -1,0 +1,9 @@
+{
+    "servers": {
+        "agent-mcp": {
+            "command": "node",
+            "args": ["${workspaceFolder}/azure-agent-mcp/dist/index.js"],
+            "envFile": "${workspaceFolder}/azure-agent-mcp/.env",
+        }
+    }
+}
