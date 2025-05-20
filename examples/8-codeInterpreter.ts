@@ -81,6 +81,11 @@ const message = await client.agents.createMessage(thread.id, {
   content: "create a bar chart of the top 10 counties with the highest expenditures",
 });
 console.log(`Created message, message ID: ${message.id}`);
+// show role and content of the message
+console.log(
+  `Message role: ${message.role}, content: ${message.content}`
+);
+//#endregion
 
 // Create and start a run of the agent
 let run = await client.agents.createRun(thread.id, agent.id);
@@ -166,9 +171,6 @@ await client.agents.deleteThread(thread.id);
 console.log(`Deleted thread, thread ID : ${thread.id}`);
 
 // Uncomment to delete the agent when finished
-// await client.agents.deleteAgent(agent.id);
-// console.log(`Deleted agent, agent ID: ${agent.id}`);
+await client.agents.deleteAgent(agent.id);
+console.log(`Deleted agent, agent ID: ${agent.id}`);
 //#endregion
-
-// await client.agents.deleteAgent(agent.id);
-// console.log(`Deleted agent, agent ID: ${agent.id}`);

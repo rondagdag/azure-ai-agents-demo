@@ -5,17 +5,17 @@
   "license": "ISC",
   "author": "Dan Wahlin",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "npx tsc",
-    "basic": "tsx ./examples/1-basic.ts",
-    "threads": "tsx ./examples/2-threads.ts",
-    "messages": "tsx ./examples/3-messages.ts",
-    "streaming": "tsx ./examples/4-streaming.ts",
-    "run": "tsx ./examples/5-run.ts",
-    "agent-attachment": "tsx ./examples/6-agentAttachment.ts",
-    "call-existing": "tsx ./examples/7-callExisting.ts",
-    "code-interpreter": "tsx ./examples/8-codeInterpreter.ts"
+    "1": "tsx ./examples/1-basic.ts",
+    "2": "tsx ./examples/2-threads.ts",
+    "3": "tsx ./examples/3-messages.ts",
+    "4": "tsx ./examples/4-streaming.ts",
+    "5": "tsx ./examples/5-run.ts",
+    "6": "tsx ./examples/6-agentAttachment.ts",
+    "7": "tsx ./examples/7-callExisting.ts",
+    "8": "tsx ./examples/8-codeInterpreter.ts"
   },
   "dependencies": {
     "@azure/ai-projects": "^1.0.0-beta.4",
@@ -29,5 +29,18 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
+  },
+  "tsconfig": {
+    "compilerOptions": {
+      "target": "ES2020",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "outDir": "dist",
+      "rootDir": ".",
+      "strict": true,
+      "esModuleInterop": true
+    },
+    "include": ["examples/**/*"],
+    "exclude": ["node_modules"]
   }
 }

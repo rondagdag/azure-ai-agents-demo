@@ -67,13 +67,19 @@ const agent = await client.agents.createAgent("gpt-4o-mini", {
 // Create a conversation thread for the interaction
 const thread = await client.agents.createThread();
 
-// Add a user message inquiring about available models
-const message = await client.agents.createMessage(thread.id, {
+const userMessage = {
   role: "user",
   content: "what are the available models to use?",
-});
+};
+// show role and content of the message
+console.log(`Message role: ${userMessage.role}, content: ${userMessage.content}`);
+// Add a user message inquiring about available models
+const message = await client.agents.createMessage(thread.id, userMessage);
 console.log(`Created message, message ID: ${message.id}`);
-
+// show role and content of the message
+console.log(
+  `Message role: ${message.role}, content: ${message.content}`
+);
 // Start a run with the agent to process the question
 let run = await client.agents.createRun(thread.id, agent.id);
 console.log(`Created run, run ID: ${run.id}`);

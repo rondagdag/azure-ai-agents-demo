@@ -36,24 +36,19 @@ const agent = await client.agents.createAgent("gpt-4o-mini", {
 
 // Create a conversation thread to hold the messages
 const thread = await client.agents.createThread();
+const userMessage = {
+  role: "user",
+  content: "hello, world!",
+};
+// show role and content of the message
+console.log(`Message role: ${userMessage.role}, content: ${userMessage.content}`);
 //#endregion
 
 //#region Message Operations
 // Create a user message in the thread
-const message = await client.agents.createMessage(thread.id, {
-  role: "user",
-  content: "hello, world!",
-});
+const message = await client.agents.createMessage(thread.id, userMessage);
 console.log(`Created message, message ID: ${message.id}`);
 
-// List messages in the thread and access the content
-const messages = await client.agents.listMessages(thread.id);
-console.log(
-  `Message ${message.id} contents: ${
-    (messages.data[0].content[0] as MessageTextContentOutput).text.value
-  }`
-);
-//#endregion
 
 //#region Cleanup
 // Delete the thread to clean up resources
