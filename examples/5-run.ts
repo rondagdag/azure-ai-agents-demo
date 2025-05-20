@@ -36,14 +36,17 @@ console.log(`Created agent, agent ID: ${agent.id}`);
 // Create a conversation thread
 const thread = await client.agents.createThread();
 console.log(`Created thread, thread ID: ${thread.id}`);
+const chatMessage = {
+  role: "user",
+  content: "hello, world!",
+};
+// show role and content of the message
+console.log(`Message role: ${chatMessage.role}, content: ${chatMessage.content}`);
 //#endregion
 
 //#region Message and Run Creation
 // Add a simple greeting message to the thread
-const message = await client.agents.createMessage(thread.id, {
-  role: "user",
-  content: "hello, world!",
-});
+const message = await client.agents.createMessage(thread.id, chatMessage);
 console.log(`Created message, message ID: ${message.id}`);
 
 // Start a run with the agent
@@ -64,10 +67,26 @@ const runSteps = await client.agents.listRunSteps(thread.id, run.id);
 console.log(`Listed run steps, run ID: ${run.id}`);
 
 // Retrieve and examine each individual run step
-runSteps.data.forEach(async (runStep) => {
+// Using for...of loop instead of forEach for better async handling
+for (const runStep of runSteps.data) {
   const step = await client.agents.getRunStep(thread.id, run.id, runStep.id);
-  console.log(`Retrieved run step, step ID: ${step}`);
-});
+  console.log(`Retrieved run step, step ID: ${step.id}`);
+  console.log(`  Type: ${step.type}`);
+  console.log(`  Status: ${step.status}`);
+  console.log(`  Created at: ${new Date(step.createdAt).toLocaleString()}`);
+  
+  // Log step details based on type - output varies by type
+  if (step.stepDetails) {
+    console.log(`  Step details: ${JSON.stringify(step.stepDetails, null, 2)}`);
+  }
+  
+  // Log any failures
+  if (step.status === 'failed') {
+    console.log(`  Step failed`);
+  }
+  
+  console.log('-----------------------------------');
+}
 //#endregion
 
 //#region Cleanup

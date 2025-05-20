@@ -50,16 +50,26 @@ console.log(`Created agent, agent ID : ${agent.id}`);
 const thread = await client.agents.createThread();
 
 console.log(`Created thread, thread ID : ${thread.id}`);
+const messageContent = {
+  role: "user",
+  content: "Hello, tell me a joke",
+};
+// show role and content of the message
+console.log(`Message role: ${messageContent.role}, content: ${messageContent.content}`);
 //#endregion
 
 //#region Message Creation and Stream Setup
 // Add a user message requesting a joke
-await client.agents.createMessage(thread.id, {
-  role: "user",
-  content: "Hello, tell me a joke",
-});
+const message = await client.agents.createMessage(thread.id, messageContent);
 
-console.log(`Created message, thread ID : ${thread.id}`);
+console.log(`Created message, message ID: ${message.id}`);
+// show role and content of the message
+// Access the message content correctly
+console.log(
+  `Message role: ${message.role}, content: ${
+    message.content[0]?.type === "text" ? message.content[0].text.value : "No text content"
+  }`
+);
 
 // Create a run with streaming enabled to get real-time responses
 const streamEventMessages = await client.agents

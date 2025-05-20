@@ -39,12 +39,16 @@ console.log(`Created thread, thread ID: ${thread.id}`);
 
 //#region Message and Run
 // Create a user message in the thread with a specific query
-const message = await client.agents.createMessage(thread.id, {
+const userMessage = {
   role: "user",
   content: "what are the available models to use?",
-});
-console.log(`Created message, message ID: ${message.id}`);
+};
+// show role and content of the message
+console.log(`Message role: ${userMessage.role}, content: ${userMessage.content}`);
+// Create a message in the thread
+const message = await client.agents.createMessage(thread.id, userMessage);
 
+console.log(`Created message, message ID: ${message.id}`);
 // Start a run with the existing agent
 let run = await client.agents.createRun(thread.id, agentId);
 console.log(`Created run, run ID: ${run.id}`);
