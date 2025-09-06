@@ -53,14 +53,15 @@ After completing the prerequisite steps (or pretending you did and hoping for th
 5. **Or try the individual examples** (choose your own adventure):
     ```bash
     # Pick your flavor of AI madness
-    npm run basic             # For AI beginners
-    npm run threads           # For the conversationally challenged
-    npm run messages          # For those who enjoy talking to themselves
-    npm run streaming         # For the pathologically impatient
-    npm run run               # For people who like redundant names
-    npm run agent-attachment  # For digital hoarders
-    npm run call-existing     # For the "work smarter not harder" crowd
-    npm run code-interpreter  # For when you want your data with a side of sass
+    npm run 1             # The Ephemeral One (basic example)
+    npm run 2             # The Commitment-Phobe (threads)
+    npm run 3             # The Echo Chamber (messages)
+    npm run 4             # The Interrupter (streaming)
+    npm run 5             # The Helicopter Parent (run example)
+    npm run 6             # The Oversharer (agent attachment)
+    npm run 7             # The Delegator (call existing)
+    npm run 8             # The Show-Off Mathematician (code interpreter)
+    npm run 9             # The Digital Marie Kondo (delete all agents)
     ```
 
 ## 🎭 The Cast of Characters: A Not-So-Serious Guide
@@ -138,6 +139,16 @@ Reality: *forwarded all requests to a pre-existing agent*
 ```
 You: "Can you analyze this financial data?"
 Agent: "According to my calculations, you should stop buying avocado toast. Here's a pie chart showing your poor life choices."
+```
+
+### 9️⃣ `9-deleteAllAgents.ts` - The Digital Marie Kondo
+*Takes your cluttered agent workspace and asks the hard questions: "Does this AI assistant spark joy?" Methodically goes through each agent, shows you exactly what it does, and asks if you really need it. The most polite way to commit digital mass termination.*
+
+```
+Script: "I found 47 agents. Here's Agent #1: Bob, age 3 minutes, loves telling jokes..."
+You: "Delete Bob."
+Script: "✅ Bob has been thanked for his service."
+*Repeat 46 more times*
 ```
 
 

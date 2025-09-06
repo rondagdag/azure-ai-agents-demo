@@ -1,0 +1,15 @@
+{
+  "type": "text",
+  "text": {
+    "value": "🎉 Ta-da! We've created a splendid bar chart showcasing Anderson County's spectacular expenditures! It's the only county in the spotlight, but at least it's a star in its own right! 🌟\n\nYou can download the chart using the link below:\n\n[Download the Bar Chart of Expenditures](sandbox:/mnt/data/top_counties_expenditures.png)\n\nIf you have any more requests or if you want to invite some friends to the party (a.k.a. other datasets), just let me know! 🎈😄",
+    "annotations": [
+      {
+        "type": "file_path",
+        "text": "sandbox:/mnt/data/top_counties_expenditures.png",
+        "filePath": { "fileId": "assistant-HdtgAHTZMVZNV6q8j6fTGC" },
+        "startIndex": 275,
+        "endIndex": 322
+      }
+    ]
+  }
+}

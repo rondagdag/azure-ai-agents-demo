@@ -15,6 +15,7 @@
     "6": "tsx ./examples/6-agentAttachment.ts",
     "7": "tsx ./examples/7-callExisting.ts",
     "8": "tsx ./examples/8-codeInterpreter.ts",
+    "9": "tsx ./examples/9-deleteAllAgents.ts",
     "build": "npx tsc"
   },
   "dependencies": {

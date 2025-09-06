@@ -8,13 +8,16 @@
 //#region Imports
 import type { 
   MessageImageFileContent, 
+  MessageTextAnnotationUnion, 
   MessageTextContent,
+  MessageTextFilePathAnnotation,
   ThreadMessage 
 } from "@azure/ai-agents";
 import { AgentsClient, ToolUtility, isOutputOfType } from "@azure/ai-agents";
 import { AIProjectClient } from "@azure/ai-projects";
 import { DefaultAzureCredential } from "@azure/identity";
 import fs from "fs";
+import path from "path";
 
 import "dotenv/config";
 //#endregion
@@ -110,6 +113,8 @@ async function main() {
     const dataPoint = messagesArray[i];
     console.log(`${dataPoint.createdAt} - ${dataPoint.role}:`);
     for (const contentItem of dataPoint.content) {
+      console.log(`- Content type: ${contentItem.type}`);
+      console.log(`  Full content: ${JSON.stringify(contentItem)}`);
       if (contentItem.type === "text") {
         console.log((contentItem as MessageTextContent).text.value);
       } else if (contentItem.type === "image_file") {
@@ -148,60 +153,97 @@ async function downloadImages(client: AgentsClient, messages: ThreadMessage[]) {
   
   for (const data of messages) {
     for (const content of data.content) {
-      if (content.type === "image_file") {
-        const imageFile = (content as MessageImageFileContent).imageFile;
-        if (imageFile) {
-          fileIds.push(imageFile.fileId);
-          console.log(`\n Found image file with ID: ${imageFile.fileId}`);
-          
-          try {
-            // Get the filename of the image
-            const fileInfo = await client.files.get(imageFile.fileId);
-            const imageFileName = fileInfo.filename;
-            
-            // Download file content directly
-            const fileContent = await client.files.getContent(imageFile.fileId);
-            
-            if (fileContent) {
-              // Ensure downloads directory exists
-              if (!fs.existsSync("./downloads")) {
-                fs.mkdirSync("./downloads", { recursive: true });
-              }
+        const messageContent = (content as MessageTextContent);
+        
+        const annotations = messageContent.text.annotations;
+        // data looks like this
+        //  "annotations": [ {"type":"file_path","text":"sandbox:/mnt/data/top_counties_expenditures.png","filePath":{"fileId":"assistant-HdtgAHTZMVZNV6q8j6fTGC"},"startIndex":275,"endIndex":322}]
+        // find file path annotation and extract filepath and fileId
+        let imageFile: MessageImageFileContent | undefined = undefined;
+        if (annotations && annotations.length > 0) {
+          for (const annotation of annotations) {
+            if (isOutputOfType<MessageTextAnnotationUnion>(annotation, "file_path")) {
+              const imageFile = (annotation as MessageTextFilePathAnnotation).filePath;
+              fileIds.push(imageFile.fileId);
+              console.log(`\n Found image file with ID: ${imageFile.fileId}`);
+              try {
+                  // Get the filename of the image
+                  const fileInfo = await client.files.get(imageFile.fileId);
+                  const imageFileName = path.basename(fileInfo.filename);
+                  console.log(`File info filename: ${fileInfo.filename}`);
+                  console.log(`Extracted basename: ${imageFileName}`);
+                  
+                  // Get file content using the StreamableMethod with asNodeStream()
+                  const fileContentStream = client.files.getContent(imageFile.fileId);
+                  const streamResponse = await fileContentStream.asNodeStream();
+                  
+                  if (!streamResponse.body) {
+                    throw new Error("Stream response body is undefined");
+                  }
+                  
+                  // Read the stream to get the actual content
+                  const chunks: Buffer[] = [];
+                  
+                  streamResponse.body.on('data', (chunk: Buffer) => {
+                    chunks.push(chunk);
+                  });
+                  
+                  const buffer = await new Promise<Buffer>((resolve, reject) => {
+                    streamResponse.body!.on('end', () => {
+                      resolve(Buffer.concat(chunks));
+                    });
+                    
+                    streamResponse.body!.on('error', reject);
+                  });
+
+                  // Ensure downloads directory exists
+                  if (!fs.existsSync("./downloads")) {
+                    fs.mkdirSync("./downloads", { recursive: true });
+                  }
+
+                  fs.writeFileSync(`./downloads/${imageFileName}`, buffer);
+                  console.log(`Saved image file to: ./downloads/${imageFileName}`);
               
-              // Convert content to Buffer if it's not already
-              let buffer: Buffer;
-              if (typeof fileContent === 'string') {
-                buffer = Buffer.from(fileContent, 'binary');
-              } else if (fileContent instanceof Uint8Array) {
-                buffer = Buffer.from(fileContent);
-              } else {
-                buffer = fileContent as Buffer;
+
+
+
+
+
+                  // // Download file content directly
+                  // const fileContent = await client.files.getContent(imageFile.fileId);
+                  
+                  // if (fileContent) {
+                  //   // Ensure downloads directory exists
+                  //   if (!fs.existsSync("./downloads")) {
+                  //     fs.mkdirSync("./downloads", { recursive: true });
+                  //   }
+                    
+                  //   // Convert content to Buffer if it's not already
+                  //   let buffer: Buffer;
+                  //   if (typeof fileContent === 'string') {
+                  //     buffer = Buffer.from(fileContent, 'binary');
+                  //   } else if (fileContent instanceof Uint8Array) {
+                  //     buffer = Buffer.from(fileContent);
+                  //   } else {
+                  //     buffer = fileContent as Buffer;
+                  //   }
+                    
+                  //   fs.writeFileSync(`./downloads/${imageFileName}`, buffer);
+                  //   console.log(`Saved image file to: ./downloads/${imageFileName}`);
+                  // } else {
+                  //   console.error(`Failed to retrieve file content for ${imageFile.fileId}: fileContent is undefined`);
+                  // }
+                  
+              } catch (error) {
+                console.error(`Error downloading image file ${imageFile.fileId}:`, error);
               }
-              
-              fs.writeFileSync(`./downloads/${imageFileName}`, buffer);
-              console.log(`Saved image file to: ./downloads/${imageFileName}`);
-            } else {
-              console.error(`Failed to retrieve file content for ${imageFile.fileId}: fileContent is undefined`);
             }
-            
-          } catch (error) {
-            console.error(`Error downloading image file ${imageFile.fileId}:`, error);
           }
         }
       }
     }
-  }
-  
-  // Delete remote files to clean up storage
-  for (const fileId of fileIds) {
-    console.log(`Deleting remote image file with ID: ${fileId}`);
-    try {
-      await client.files.delete(fileId);
-    } catch (error) {
-      console.error(`Error deleting file ${fileId}:`, error);
-    }
-  }
 }
+
 
 main().catch((err) => {
   console.error("Error running code interpreter example:", err);
