@@ -37,11 +37,11 @@ async function main() {
   //#region File Upload and Tool Setup
   // Read and upload the CSV file to Azure AI Agent service
   const localFileStream = fs.createReadStream(filePath);
-  const file = await client.files.upload(localFileStream, "assistants", {
+  const localFile = await client.files.upload(localFileStream, "assistants", {
     fileName: fileName,
   });
 
-  console.log(`Uploaded file, ID: ${file.id}`);
+  console.log(`Uploaded file, ID: ${localFile.id}`);
   // Commented vector store setup - alternative approach using file search instead of code interpreter
   // const vectorStore = await client.vectorStores.create({
   //   fileIds: [file.id],
@@ -51,7 +51,7 @@ async function main() {
   // const fileSearchTool = ToolUtility.createFileSearchTool([vectorStore.id]);
 
   // Create a code interpreter tool with access to the uploaded file
-  const codeInterpreterTool = ToolUtility.createCodeInterpreterTool([file.id]);
+  const codeInterpreterTool = ToolUtility.createCodeInterpreterTool([localFile.id]);
   //#endregion
 
   //#region Agent Creation
@@ -125,6 +125,10 @@ async function main() {
 
   // Download any generated image files using proper streaming
   await downloadImages(client, messagesArray);
+
+  // Delete the original file from the agent to free up space (note: this does not delete your version of the file)
+  await client.files.delete(localFile.id);
+  console.log(`Deleted file, file ID: ${localFile.id}`);
 
   // Delete the thread to clean up resources
   // await client.threads.delete(thread.id);
