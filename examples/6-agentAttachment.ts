@@ -130,6 +130,6 @@ await client.agents.threads.delete(thread.id);
 console.log(`Deleted thread, thread ID : ${thread.id}`);
 
 // Delete the agent
-//await client.agents.deleteAgent(agent.id);
+await client.agents.deleteAgent(agent.id);
 console.log(`Deleted agent, agent ID: ${agent.id}`);
 //#endregion

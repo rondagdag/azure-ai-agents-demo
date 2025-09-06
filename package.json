@@ -7,7 +7,6 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "build": "npx tsc",
     "1": "tsx ./examples/1-basic.ts",
     "2": "tsx ./examples/2-threads.ts",
     "3": "tsx ./examples/3-messages.ts",
@@ -15,9 +14,11 @@
     "5": "tsx ./examples/5-run.ts",
     "6": "tsx ./examples/6-agentAttachment.ts",
     "7": "tsx ./examples/7-callExisting.ts",
-    "8": "tsx ./examples/8-codeInterpreter.ts"
+    "8": "tsx ./examples/8-codeInterpreter.ts",
+    "build": "npx tsc"
   },
   "dependencies": {
+    "@azure/ai-agents": "^1.1.0",
     "@azure/ai-projects": "^1.0.0",
     "@azure/identity": "^4.8.0",
     "dotenv": "^16.4.7"
@@ -40,7 +41,11 @@
       "strict": true,
       "esModuleInterop": true
     },
-    "include": ["examples/**/*"],
-    "exclude": ["node_modules"]
+    "include": [
+      "examples/**/*"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
   }
 }
