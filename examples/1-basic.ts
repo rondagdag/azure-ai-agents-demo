@@ -6,21 +6,21 @@
  */
 
 //#region Imports
-import { AIProjectsClient } from "@azure/ai-projects";
+import { AIProjectClient } from "@azure/ai-projects";
 import { DefaultAzureCredential } from "@azure/identity";
 
 import "dotenv/config";
 //#endregion
 
 //#region Configuration
-// Load connection string from environment variables or use default placeholder
-const connectionString =
-  process.env["AI_FOUNDRY_PROJECT_CONNECTION_STRING"] ||
-  "<project connection string>";
+// Load endpoint from environment variables or use default placeholder
+const endpoint =
+  process.env["AZURE_AI_PROJECT_ENDPOINT_STRING"] ||
+  "<project endpoint>";
 
-// Initialize AI Projects client with connection string and Azure credentials
-const client = AIProjectsClient.fromConnectionString(
-  connectionString || "",
+// Initialize AI Projects client with endpoint and Azure credentials
+const client = new AIProjectClient(
+  endpoint,
   new DefaultAzureCredential()
 );
 //#endregion

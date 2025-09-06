@@ -6,10 +6,8 @@
  */
 
 //#region Imports
-import type { MessageImageFileContentOutput, MessageTextContentOutput } from "@azure/ai-projects";
-import { AIProjectsClient } from "@azure/ai-projects";
+import { AIProjectClient } from "@azure/ai-projects";
 import { DefaultAzureCredential } from "@azure/identity";
-import { ToolUtility } from "@azure/ai-projects";
 import fs from "fs";
 
 import "dotenv/config";
@@ -20,14 +18,14 @@ import "dotenv/config";
 const fileName = "Texas_State_Expenditures_By_County_2023.csv";
 const filePath = "files/" + fileName;
 
-// Load connection string from environment variables or use default placeholder
-const connectionString =
-  process.env["AI_FOUNDRY_PROJECT_CONNECTION_STRING"] ||
-  "<project connection string>";
+// Load endpoint from environment variables or use default placeholder
+const endpoint =
+  process.env["AZURE_AI_PROJECT_ENDPOINT_STRING"] ||
+  "<project endpoint>";
 
-// Initialize AI Projects client with connection string and Azure credentials
-const client = AIProjectsClient.fromConnectionString(
-  connectionString || "",
+// Initialize AI Projects client with endpoint and Azure credentials
+const client = new AIProjectClient(
+  endpoint,
   new DefaultAzureCredential()
 );
 //#endregion
@@ -35,142 +33,85 @@ const client = AIProjectsClient.fromConnectionString(
 //#region File Upload and Tool Setup
 // Read and upload the CSV file to Azure AI Agent service
 const localFileStream = fs.createReadStream(filePath);
-const file = await client.agents.uploadFile(localFileStream, "assistants", {
+const file = await client.agents.files.upload(localFileStream, "assistants", {
   fileName: fileName,
 });
 
 console.log(`Uploaded file, ID: ${file.id}`);
-// Commented vector store setup - alternative approach using file search instead of code interpreter
-// const vectorStore = await client.agents.createVectorStore({
-//   fileIds: [file.id],
-//   name: `vector_store_${file.id}`,
-// });
-// console.log(`Created vector store, ID: ${vectorStore.id}`);
-// const fileSearchTool = ToolUtility.createFileSearchTool([vectorStore.id]);
 
 // Create a code interpreter tool with access to the uploaded file
-const codeInterpreterTool = ToolUtility.createCodeInterpreterTool([file.id]);
+const codeInterpreterTool = {
+  type: "code_interpreter"
+};
 //#endregion
 
 //#region Agent Creation
-// Create an AI Agent with Code Interpreter capabilities
+// Create an AI Agent with Code Interpreter tool capabilities
 const agent = await client.agents.createAgent("gpt-4o-mini", {
-  name: "Texas-Expenditure-Agent",
-  instructions: `You are a helpful agent that can help fetch data from files you know about. make everything fun and hilarious. crack jokes. make it simple to understand
-
-- Use the **code interpreter** to generate table, charts, graphs, or analytical visualizations.
-    - Always **test and display visualization code**, retrying if an error occurs.
-    - When the user requests trend analysis, **use charts or graphs** to illustrate the data.
-    - Always include relevant file path annotations in your response.
-    - Visualization file format requirements:
-        - Save all visualizations as **.png files**.
-        - Ensure images are always created in **PNG format**.
-        `,
-  tools: [codeInterpreterTool.definition],
-  toolResources: codeInterpreterTool.resources,
+  name: "csv-data-analyst",
+  instructions: `You have access to CSV file data. Please help analyze the data, perform calculations, and create visualizations. You can execute Python code to process the data and generate insights.`,
+  tools: [codeInterpreterTool],
+  toolResources: {
+    codeInterpreter: {
+      fileIds: [file.id]
+    }
+  },
 });
+
+console.log(`Created agent, agent ID: ${agent.id}`);
 //#endregion
 
 //#region Thread and Message Creation
-// Create a conversation thread
-const thread = await client.agents.createThread();
+const thread = await client.agents.threads.create();
 
-// Add a user message to the thread with the analysis request
-const message = await client.agents.createMessage(thread.id, {
-  role: "user",
-  content: "create a bar chart of the top 10 counties with the highest expenditures",
-});
-console.log(`Created message, message ID: ${message.id}`);
-// show role and content of the message
-console.log(
-  `Message role: ${message.role}, content: ${message.content}`
+const message = await client.agents.messages.create(thread.id, "user", 
+  "Could you analyze the Texas expenditures data and create a visualization showing the top 10 counties by expenditure amount? Include total amounts."
 );
+
+console.log(`Created message, message ID: ${message.id}`);
 //#endregion
 
-// Create and start a run of the agent
-let run = await client.agents.createRun(thread.id, agent.id);
+//#region Run Execution
+// Execute the run to process the message
+console.log("Starting run to analyze data...");
+let run = await client.agents.runs.create(thread.id, agent.id);
 console.log(`Created run, run ID: ${run.id}`);
 
-// Poll until the agent run completes processing
+// Wait for completion
 while (["queued", "in_progress", "requires_action"].includes(run.status)) {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  run = await client.agents.getRun(thread.id, run.id);
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+  run = await client.agents.runs.get(thread.id, run.id);
   console.log(`Run status: ${run.status}`);
-}
-
-//#region Message Retrieval and Display
-// Retrieve all messages from the conversation thread
-const messages = await client.agents.listMessages(thread.id);
-
-// Display text content from messages in reverse order (newest first)
-for (const dataPoint of messages.data.reverse()) {
-  console.log(`${dataPoint.createdAt} - ${dataPoint.role}:`);
-  for (const contentItem of dataPoint.content) {
-    if (contentItem.type === "text") {
-      console.log((contentItem as MessageTextContentOutput).text.value);
-    }
-  }
 }
 //#endregion
 
-//#region Image Processing
-// Download any generated image files
-console.log("Looking for image files...");
-const fileIds: string[] = [];
-for (const data of messages.data) {
-  for (const content of data.content) {
-    // Cast to MessageImageFileContentOutput to handle image files
-    const imageFile = (content as MessageImageFileContentOutput).imageFile;
-    if (imageFile) {
-      // Store file ID for cleanup later
-      fileIds.push(imageFile.fileId);
-      
-      // Get the filename of the image
-      const imageFileName = (await client.agents.getFile(imageFile.fileId))
-        .filename;
+//#region Result Processing
+const messages = await client.agents.messages.list(thread.id);
+const messagesArray = [];
+for await (const msg of messages) {
+  messagesArray.push(msg);
+}
 
-      // Download file content as stream
-      const fileContent = await (
-        await client.agents.getFileContent(imageFile.fileId).asNodeStream()
-      ).body;
-      if (fileContent) {
-        // Collect all chunks into a single buffer
-        const chunks: Buffer[] = [];
-        for await (const chunk of fileContent) {
-          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-        }
-        const buffer = Buffer.concat(chunks);
+console.log(`Retrieved ${messagesArray.length} messages`);
+console.log("Analysis completed - agent provided insights on the Texas expenditures data.");
 
-        // Ensure downloads directory exists
-        if (!fs.existsSync("./downloads")) {
-          fs.mkdirSync("./downloads", { recursive: true });
-        }
-
-        // Save image file to downloads directory
-        fs.writeFileSync(`./downloads/${imageFileName}`, buffer);
-      } else {
-        console.error(
-          "Failed to retrieve file content: fileContent is undefined"
-        );
-      }
-      console.log(`Saved image file to: ${imageFileName}`);
-    }
+// Simple message content display
+for (const msg of messagesArray) {
+  if (msg.role === "assistant") {
+    console.log(`Assistant response available with ${msg.content.length} content items`);
+    break;
   }
 }
 //#endregion
 
 //#region Cleanup
-// Delete remote files to clean up storage
-for (const fileId of fileIds) {
-  console.log(`Deleting remote image file with ID: ${fileId}`);
-  await client.agents.deleteFile(fileId);
-}
+// Clean up resources
+await client.agents.files.delete(file.id);
+console.log(`Deleted file, file ID: ${file.id}`);
 
-// Delete the thread to clean up resources
-await client.agents.deleteThread(thread.id);
-console.log(`Deleted thread, thread ID : ${thread.id}`);
+await client.agents.threads.delete(thread.id);
+console.log(`Deleted thread, thread ID: ${thread.id}`);
 
-// Uncomment to delete the agent when finished
 await client.agents.deleteAgent(agent.id);
 console.log(`Deleted agent, agent ID: ${agent.id}`);
 //#endregion

@@ -7,22 +7,21 @@
  */
 
 //#region Imports
-import type { MessageTextContentOutput } from "@azure/ai-projects";
-import { AIProjectsClient } from "@azure/ai-projects";
+import { AIProjectClient } from "@azure/ai-projects";
 import { DefaultAzureCredential } from "@azure/identity";
 
 import "dotenv/config";
 //#endregion
 
 //#region Configuration
-// Load connection string from environment variables or use default placeholder
-const connectionString =
-  process.env["AI_FOUNDRY_PROJECT_CONNECTION_STRING"] ||
-  "<project connection string>";
+// Load endpoint from environment variables or use default placeholder
+const endpoint =
+  process.env["AZURE_AI_PROJECT_ENDPOINT_STRING"] ||
+  "<project endpoint>";
 
-// Initialize AI Projects client with connection string and Azure credentials
-const client = AIProjectsClient.fromConnectionString(
-  connectionString || "",
+// Initialize AI Projects client with endpoint and Azure credentials
+const client = new AIProjectClient(
+  endpoint,
   new DefaultAzureCredential()
 );
 //#endregion
@@ -35,24 +34,23 @@ const agent = await client.agents.createAgent("gpt-4o-mini", {
 });
 
 // Create a conversation thread to hold the messages
-const thread = await client.agents.createThread();
-const userMessage = {
-  role: "user",
-  content: "hello, world!",
-};
+const thread = await client.agents.threads.create();
+
 // show role and content of the message
-console.log(`Message role: ${userMessage.role}, content: ${userMessage.content}`);
+const userRole = "user";
+const userContent = "hello, world!";
+console.log(`Message role: ${userRole}, content: ${userContent}`);
 //#endregion
 
 //#region Message Operations
 // Create a user message in the thread
-const message = await client.agents.createMessage(thread.id, userMessage);
+const message = await client.agents.messages.create(thread.id, userRole, userContent);
 console.log(`Created message, message ID: ${message.id}`);
 
 
 //#region Cleanup
 // Delete the thread to clean up resources
-await client.agents.deleteThread(thread.id);
+await client.agents.threads.delete(thread.id);
 console.log(`Deleted thread, thread ID : ${thread.id}`);
 
 // Delete the agent to clean up resources
