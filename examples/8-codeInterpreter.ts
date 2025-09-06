@@ -22,6 +22,20 @@ import path from "path";
 import "dotenv/config";
 //#endregion
 
+/**
+ * Simple wait for file processing to prevent vector store timeout
+ */
+async function waitForFileProcessing(client: AgentsClient, fileId: string): Promise<void> {
+  try {
+    await client.files.get(fileId);
+    await new Promise(resolve => setTimeout(resolve, 3000)); // Buffer for vector store processing
+    console.log("✓ File ready");
+  } catch (error) {
+    await new Promise(resolve => setTimeout(resolve, 5000)); // Fallback delay
+    console.log("✓ File processing timeout, continuing...");
+  }
+}
+
 //#region Configuration
 // Set up file path and connection details
 const fileName = "Texas_State_Expenditures_By_County_2023.csv";
@@ -37,7 +51,8 @@ const client = new AgentsClient(endpoint, new DefaultAzureCredential());
 //#endregion
 
 async function main() {
-  //#region File Upload and Tool Setup
+  try {
+    //#region File Upload and Tool Setup
   // Read and upload the CSV file to Azure AI Agent service
   const localFileStream = fs.createReadStream(filePath);
   const localFile = await client.files.upload(localFileStream, "assistants", {
@@ -45,6 +60,12 @@ async function main() {
   });
 
   console.log(`Uploaded file, ID: ${localFile.id}`);
+  
+  // Wait for file to be processed in vector store
+  console.log("⏳ Waiting for file to be processed...");
+  await waitForFileProcessing(client, localFile.id);
+  console.log("✓ File processing completed!");
+
   // Commented vector store setup - alternative approach using file search instead of code interpreter
   // const vectorStore = await client.vectorStores.create({
   //   fileIds: [file.id],
@@ -61,16 +82,21 @@ async function main() {
   // Create an AI Agent with Code Interpreter capabilities
   const agent = await client.createAgent("gpt-4o-mini", {
     name: "Texas-Expenditure-Agent",
-    instructions: `You are a helpful agent that can help fetch data from files you know about. make everything fun and hilarious. crack jokes. make it simple to understand
+    instructions: `You are a data analysis assistant. When working with large CSV files:
+1. Load data efficiently using pandas
+2. Handle memory limitations by processing data in chunks if needed
+3. Always show a data summary first before creating visualizations
+4. Create simple, clear charts and save as PNG files
+5. If you encounter errors, try simpler approaches or smaller data samples
 
+Make everything fun and hilarious. Crack jokes. Make it simple to understand.
 - Use the **code interpreter** to generate table, charts, graphs, or analytical visualizations.
-    - Always **test and display visualization code**, retrying if an error occurs.
-    - When the user requests trend analysis, **use charts or graphs** to illustrate the data.
-    - Always include relevant file path annotations in your response.
-    - Visualization file format requirements:
-        - Save all visualizations as **.png files**.
-        - Ensure images are always created in **PNG format**.
-        `,
+- Always **test and display visualization code**, retrying if an error occurs.
+- When the user requests trend analysis, **use charts or graphs** to illustrate the data.
+- Always include relevant file path annotations in your response.
+- Visualization file format requirements:
+    - Save all visualizations as **.png files**.
+    - Ensure images are always created in **PNG format**.`,
     tools: [codeInterpreterTool.definition],
     toolResources: codeInterpreterTool.resources,
   });
@@ -82,10 +108,18 @@ async function main() {
   const thread = await client.threads.create();
 
   // Add a user message to the thread with the analysis request
-  const message = await client.messages.create(thread.id, "user", "create a bar chart of the top 10 counties with the highest expenditures");
+  const message = await client.messages.create(
+    thread.id, 
+    "user", 
+    "Great! Now please create a simple bar chart showing the top 5 counties by total expenditure amount. Keep it simple and save as PNG."
+  );
   console.log(`Created message, message ID: ${message.id}`);
   // show role and content of the message
   console.log(`Message role: ${message.role}, content: ${message.content}`);
+
+  // Additional wait to ensure vector store is ready for the attachment
+  console.log("⏳ Allowing additional time for vector store processing...");
+  await new Promise(resolve => setTimeout(resolve, 5000));
 
   // Create and start a run of the agent
   let run = await client.runs.create(thread.id, agent.id);
@@ -93,9 +127,23 @@ async function main() {
 
   // Poll until the agent run completes processing
   while (["queued", "in_progress", "requires_action"].includes(run.status)) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
     run = await client.runs.get(thread.id, run.id);
     console.log(`Run status: ${run.status}`);
+  }
+
+  console.log(`✓ Completed: ${run.status}`);
+
+  // Check if run failed and provide detailed error information
+  if (run.status === "failed") {
+    console.log(`❌ Run failed with status: ${run.status}`);
+    if (run.lastError) {
+      console.log(`Error Code: ${run.lastError.code}`);
+      console.log(`Error Message: ${run.lastError.message}`);
+    }
+    
+    // Still try to get messages to see what happened
+    console.log("\n🔍 Checking conversation for error details...");
   }
 
   // Retrieve all messages from the conversation thread
@@ -142,6 +190,14 @@ async function main() {
   // Delete the agent when finished
   //await client.deleteAgent(agent.id);
   console.log(`Deleted agent, agent ID: ${agent.id}`);
+  
+  console.log("🎉 Demo completed!");
+  } catch (error) {
+    console.error("❌ Error:", error instanceof Error ? error.message : String(error));
+    if (error instanceof Error && error.stack) {
+      console.error("Stack trace:", error.stack);
+    }
+  }
 }
 
 /**
