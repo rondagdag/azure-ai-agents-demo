@@ -29,7 +29,7 @@ const client = new AIProjectClient(
 
 //#region File Upload and Vector Store Setup
 // Define the PDF file to use and its path
-const fileName = "azure-ai-foundry.pdf";
+const fileName = "azure-ai-services-agents.pdf";
 const filePath = "files/" + fileName;
 // Create a readable stream from the PDF file
 const localFileStream = fs.createReadStream(filePath);
