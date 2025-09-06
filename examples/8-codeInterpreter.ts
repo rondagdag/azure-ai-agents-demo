@@ -127,7 +127,7 @@ async function main() {
   await downloadImages(client, messagesArray);
 
   // Delete the original file from the agent to free up space (note: this does not delete your version of the file)
-  await client.files.delete(localFile.id);
+  //await client.files.delete(localFile.id);
   console.log(`Deleted file, file ID: ${localFile.id}`);
 
   // Delete the thread to clean up resources
