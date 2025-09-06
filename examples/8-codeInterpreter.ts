@@ -74,8 +74,8 @@ async function main() {
   // console.log(`Created vector store, ID: ${vectorStore.id}`);
   // const fileSearchTool = ToolUtility.createFileSearchTool([vectorStore.id]);
 
-  // Create a code interpreter tool with access to the uploaded file
-  const codeInterpreterTool = ToolUtility.createCodeInterpreterTool([localFile.id]);
+  // Create a code interpreter tool (no file restriction - like C# version)
+  const codeInterpreterTool = ToolUtility.createCodeInterpreterTool();
   //#endregion
 
   //#region Agent Creation
@@ -111,7 +111,15 @@ Make everything fun and hilarious. Crack jokes. Make it simple to understand.
   const message = await client.messages.create(
     thread.id, 
     "user", 
-    "Great! Now please create a simple bar chart showing the top 5 counties by total expenditure amount. Keep it simple and save as PNG."
+    "Hello! I've uploaded a CSV file with Texas state expenditures data. Can you first analyze the data and show me a summary of what's in the file?",
+    {
+      attachments: [
+        {
+          fileId: localFile.id,
+          tools: [{ type: "code_interpreter" }]
+        }
+      ]
+    }
   );
   console.log(`Created message, message ID: ${message.id}`);
   // show role and content of the message
@@ -144,6 +152,45 @@ Make everything fun and hilarious. Crack jokes. Make it simple to understand.
     
     // Still try to get messages to see what happened
     console.log("\n🔍 Checking conversation for error details...");
+  } else if (run.status === "completed") {
+    // First run completed successfully, now ask for the chart
+    console.log("\n📊 Data analysis completed! Now requesting chart generation...");
+    
+    const chartMessage = await client.messages.create(
+      thread.id,
+      "user", 
+      "Now please create a simple bar chart showing just the top 5 counties by total expenditure. Use only the top 5 to keep it simple and save it as a PNG file.",
+      {
+        attachments: [
+          {
+            fileId: localFile.id,
+            tools: [{ type: "code_interpreter" }]
+          }
+        ]
+      }
+    );
+    console.log(`Created chart request message, ID: ${chartMessage.id}`);
+    
+    // Create and run the chart generation
+    let chartRun = await client.runs.create(thread.id, agent.id);
+    console.log(`Created chart run, run ID: ${chartRun.id}`);
+    
+    // Poll until the chart run completes
+    while (["queued", "in_progress", "requires_action"].includes(chartRun.status)) {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      chartRun = await client.runs.get(thread.id, chartRun.id);
+      console.log(`Chart run status: ${chartRun.status}`);
+    }
+    
+    console.log(`✓ Chart generation completed: ${chartRun.status}`);
+    
+    if (chartRun.status === "failed") {
+      console.log(`❌ Chart generation failed with status: ${chartRun.status}`);
+      if (chartRun.lastError) {
+        console.log(`Error Code: ${chartRun.lastError.code}`);
+        console.log(`Error Message: ${chartRun.lastError.message}`);
+      }
+    }
   }
 
   // Retrieve all messages from the conversation thread
