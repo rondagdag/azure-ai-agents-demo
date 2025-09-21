@@ -103,6 +103,7 @@ while (["queued", "in_progress", "requires_action"].includes(run.status)) {
 // Retrieve messages from the thread to get the agent's response
 const messages = await client.agents.messages.list(thread.id);
 
+
 // Convert async iterator to array and display the response
 const messagesArray = [];
 for await (const msg of messages) {
@@ -110,6 +111,13 @@ for await (const msg of messages) {
 }
 
 console.log(`Retrieved ${messagesArray.length} messages`);
+// Display the text content of all the responses
+for (const msg of messagesArray) {
+  if (msg.content[0]?.type === "text") {
+    console.log(`- ${(msg.content[0] as any).text?.value}`);
+  }
+}
+
 if (messagesArray.length > 0) {
   console.log(`Agent provided a response to the query about available models.`);
 }
