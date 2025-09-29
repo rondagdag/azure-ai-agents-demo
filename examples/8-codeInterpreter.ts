@@ -127,7 +127,7 @@ Make everything fun and hilarious. Crack jokes. Make it simple to understand.
 
   // Additional wait to ensure vector store is ready for the attachment
   console.log("⏳ Allowing additional time for vector store processing...");
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  await new Promise(resolve => setTimeout(resolve, 10000));
 
   // Create and start a run of the agent
   let run = await client.runs.create(thread.id, agent.id);
@@ -235,7 +235,7 @@ Make everything fun and hilarious. Crack jokes. Make it simple to understand.
   console.log(`Deleted thread, thread ID : ${thread.id}`);
 
   // Delete the agent when finished
-  //await client.deleteAgent(agent.id);
+  await client.deleteAgent(agent.id);
   console.log(`Deleted agent, agent ID: ${agent.id}`);
   
   console.log("🎉 Demo completed!");
