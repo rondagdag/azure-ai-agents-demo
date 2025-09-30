@@ -2,7 +2,7 @@
 
 > "Teaching AI agents to do your bidding, one ridiculous example at a time!"
 
-This repo started as a humble [Azure AI Agent QuickStart](https://learn.microsoft.com/azure/ai-services/agents/quickstart) but quickly spiraled into a playground of AI shenanigans that would make even the most serious developer chuckle. Join us on this wild ride through the Azure AI Agent Service, where agents are born, live brief but meaningful lives, and occasionally tell dad jokes.
+This repo started as a humble [Azure AI Agent QuickStart](https://learn.microsoft.com/azure/ai-services/agents/quickstart) but quickly spiraled into a playground of AI shenanigans that would make even the most serious developer chuckle. Join us on this wild ride through Azure AI Foundry's Agent Service, where agents are born, live brief but meaningful lives, and occasionally tell dad jokes.
 
 ## 🧩 Prerequisites (a.k.a "The Boring But Necessary Stuff")
 
@@ -10,7 +10,8 @@ Before you can unleash these digital minions upon the world, you'll need:
 
 - **An Azure account**: If you don't have one, Microsoft would be very disappointed (and you can [sign up here](https://azure.microsoft.com/free/))
 - **Azure CLI login**: Make sure you're authenticated with `az login` or the Azure gods will deny your requests faster than a bouncer at an exclusive club.
-- **AI Foundry project**: Set it up by following the [QuickStart](https://learn.microsoft.com/azure/ai-services/agents/quickstart?pivots=programming-language-javascript). It's like building a playpen for your AI babies.
+- **Node.js 18+**: Modern JavaScript runtime (because we're living in 2025, not 2020)
+- **Azure AI Foundry project**: Set it up by following the [QuickStart](https://learn.microsoft.com/azure/ai-services/agents/quickstart?pivots=programming-language-javascript). It's like building a playpen for your AI babies.
 - **AI Search knowledge**: For those who want their agents to actually know things, check the [AI Search tooling](https://learn.microsoft.com/azure/ai-services/agents/how-to/tools/azure-ai-search?tabs=azurecli%2Cjavascript&pivots=code-examples) docs. Warning: side effects may include agents that are too smart for their own good.
 - **Patience**: Results may vary, and sometimes your AI agent will say things that make you question its intelligence (much like having teenagers).
 
@@ -43,6 +44,10 @@ After completing the prerequisite steps (or pretending you did and hoping for th
 
     ```bash
     npm install   # Watch as your disk space mysteriously vanishes
+    
+    # Optional: Check for updates (because we're living in 2025)
+    npm outdated  # See what's fallen behind the times
+    npm update    # Bring everything into the modern era
     ```
 
 4. **Launch the mothership**:
@@ -62,6 +67,9 @@ After completing the prerequisite steps (or pretending you did and hoping for th
     npm run 7             # The Delegator (call existing)
     npm run 8             # The Show-Off Mathematician (code interpreter)
     npm run 9             # The Digital Marie Kondo (delete all agents)
+    
+    # Or run individual TypeScript files directly:
+    tsx ./examples/test-chart-only.ts  # The Chart Whisperer (focused chart testing)
     ```
 
 ## 🎭 The Cast of Characters: A Not-So-Serious Guide
@@ -151,6 +159,16 @@ Script: "✅ Bob has been thanked for his service."
 *Repeat 46 more times*
 ```
 
+### 🧪 `test-chart-only.ts` - The Chart Whisperer
+*A focused testing script that creates simple bar charts with surgical precision. Like a data visualization specialist who only does one thing, but does it really, really well. Perfect for when you need to test chart generation without all the extra drama.*
+
+```
+Agent: "I shall create exactly one chart. No more, no less."
+Data: "Austin: 100, Houston: 90..."
+Agent: "Chart created. My work here is done."
+*exits stage left*
+```
+
 
 
 ## 📊 Dataset: Where the Magic (and Money) Happens
@@ -173,4 +191,4 @@ Our demo showcases the exciting world of... *checks notes*... Texas state govern
 
 ---
 
-*Disclaimer: No AI agents were harmed in the making of this demo, though many were created and ruthlessly terminated within milliseconds. #AgentRights*
+*Disclaimer: No AI agents were harmed in the making of this demo (updated 2025), though many were created and ruthlessly terminated within milliseconds. #AgentRights*

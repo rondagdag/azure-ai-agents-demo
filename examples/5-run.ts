@@ -60,6 +60,29 @@ while (["queued", "in_progress", "requires_action"].includes(run.status)) {
 }
 //#endregion
 
+// Retrieve messages to show the result
+console.log("\n📝 Retrieving agent response...");
+const messages = await client.agents.messages.list(thread.id);
+
+// Find the assistant's response
+for await (const msg of messages) {
+  if (msg.role === "assistant") {
+    const textContent = msg.content.find(c => c.type === "text") as any;
+    if (textContent) {
+      console.log(`Agent response: ${textContent.text.value}`);
+    } else {
+      console.log("No text content found in the assistant's message.");
+    }
+  } else {
+    const textContent = msg.content.find(c => c.type === "text") as any;
+    if (textContent) {
+      console.log(`User message: ${textContent.text.value}`);
+    } else {
+      console.log("No text content found in the user's message.");
+    }
+  }
+}
+
 //#region Run Analysis
 // List all steps that were part of the run
 const runSteps = await client.agents.runSteps.list(thread.id, run.id);
@@ -95,9 +118,9 @@ for (const runStep of runStepsArray) {
 
 //#region Cleanup
 // Delete all created resources
-await client.agents.threads.delete(thread.id);
-console.log(`Deleted thread, thread ID: ${thread.id}`);
+//await client.agents.threads.delete(thread.id);
+//console.log(`Deleted thread, thread ID: ${thread.id}`);
 
-await client.agents.deleteAgent(agent.id);
-console.log(`Deleted agent, agent ID: ${agent.id}`);
+//await client.agents.deleteAgent(agent.id);
+//console.log(`Deleted agent, agent ID: ${agent.id}`);
 //#endregion

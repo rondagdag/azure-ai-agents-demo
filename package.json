@@ -21,16 +21,16 @@
   "dependencies": {
     "@azure/ai-agents": "^1.1.0",
     "@azure/ai-projects": "^1.0.0",
-    "@azure/identity": "^4.8.0",
-    "dotenv": "^16.4.7"
+    "@azure/identity": "^4.12.0",
+    "dotenv": "^17.2.3"
   },
   "devDependencies": {
-    "@types/node": "^22.13.10",
-    "concurrently": "^9.1.2",
+    "@types/node": "^24.6.0",
+    "concurrently": "^9.2.1",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.2"
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.2"
   },
   "tsconfig": {
     "compilerOptions": {
